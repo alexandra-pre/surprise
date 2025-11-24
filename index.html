@@ -129,7 +129,7 @@ body {
   overflow: hidden;
 }
 
-/* ---------- Коробка ---------- */
+/* ---------- Коробка (без изменений) ---------- */
 .mt-40 { margin-top: 5rem; text-align: center; }
 .joggle { animation: joggle 4.5s ease-in-out infinite; }
 .gift-box__emoji { font-size: 13em; }
@@ -148,7 +148,7 @@ body {
 .gift-box__message--hidden { opacity: 0; transform: scale(0.95); }
 @keyframes joggle { 0%,33%,100%{transform:rotate(0deg);} 3.33%{transform:rotate(-10deg);} 6.67%{transform:rotate(12deg);} 10%{transform:rotate(-10deg);} 13.33%{transform:rotate(9deg);} 16.67%{transform:rotate(0deg);} }
 
-/* ---------- Слайды — на весь экран ---------- */
+/* ---------- Слайды — на весь экран (без изменений) ---------- */
 #slides {
   display: none;
   position: fixed;
@@ -162,18 +162,27 @@ body {
   z-index: 9999;
 }
 
+/* ---------------------------------------------------- */
+/* ИЗМЕНЕНИЯ ДЛЯ РАМКИ КАРТИНКИ И КНОПОК */
 .slide-wrapper {
-  position: relative;
+  position: relative; /* 1. Оставляет контекст позиционирования */
   width: 90%;
   height: 90%;
   display: flex;
   justify-content: center;
   align-items: center;
+  
+  /* 2. Добавляет паддинг (вашу "белую рамку") по бокам. */
+  /* Это пространство, куда теперь попадут кнопки. */
+  padding: 0 70px; /* Увеличил, чтобы было достаточно места для больших кнопок */
 }
+/* ---------------------------------------------------- */
 
 .img {
   position: absolute;
-  width: 100%;
+  /* Важно: картинка должна занимать 100% пространства, 
+     которое осталось после паддинга, чтобы она не "заезжала" на кнопки. */
+  width: 100%; 
   height: 100%;
   object-fit: contain;
   opacity: 0;
@@ -197,21 +206,33 @@ body {
   opacity: 0.8;
 }
 .navbtn:hover { opacity: 1; }
-#prevBtn { left: 20px; }   /* на больших экранах */
-#nextBtn { right: 20px; }
+
+/* 3. Кнопки прижимаются к краю *контейнера*, 
+   то есть попадают в область паддинга (рамки). */
+#prevBtn { left: 0; }   /* С 70px на 0 */
+#nextBtn { right: 0; }  /* С 70px на 0 */
 
 /* ---------- Мобильные кнопки ---------- */
 @media (max-width: 600px) {
+    /* 4. Корректируем мобильную рамку */
+    .slide-wrapper {
+      padding: 0 10%; /* Достаточный отступ для мобильной кнопки */
+    }
+    
   .navbtn {
-    font-size: 36px;    /* чуть меньше */
-    padding: 0 12px;    /* меньше поля */
-    opacity: 0.6;       /* чуть прозрачные */
+    font-size: 40px;
+    padding: 0 15px;
+    opacity: 0.5;
   }
-  #prevBtn { left: 4%; }   /* чуть накладываются на край картинки */
-  #nextBtn { right: 4%; }  /* чуть накладываются на край картинки */
+  
+  /* 5. Кнопки прижимаются к краю *мобильной рамки* */
+  #prevBtn { left: 0; }   /* С -50px на 0 */
+  #nextBtn { right: 0; }  /* С -50px на 0 */
+  
+  .gift-box__emoji { font-size: 9em; }
+  .gift-box__btn { font-size: 1.5em; }
 }
 </style>
-</head>
 
 <body>
 <div class="mt-40">
