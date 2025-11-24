@@ -197,18 +197,18 @@ body {
   opacity: 0.8;
 }
 .navbtn:hover { opacity: 1; }
-#prevBtn { left: 70px; }
-#nextBtn { right: 70px; }
+#prevBtn { left: 20px; }   /* на больших экранах */
+#nextBtn { right: 20px; }
 
 /* ---------- Мобильные кнопки ---------- */
 @media (max-width: 600px) {
   .navbtn {
-    font-size: 40px;      /* уменьшаем размер стрелок */
-    padding: 0 15px;       /* уменьшаем внутренние отступы */
-    opacity: 0.6;          /* чуть более прозрачные */
+    font-size: 36px;    /* чуть меньше */
+    padding: 0 12px;    /* меньше поля */
+    opacity: 0.6;       /* чуть прозрачные */
   }
-  #prevBtn { left: -20px; }  /* ближе к картинке, немного накладываются */
-  #nextBtn { right: -20px; } /* ближе к картинке, немного накладываются */
+  #prevBtn { left: 4%; }   /* чуть накладываются на край картинки */
+  #nextBtn { right: 4%; }  /* чуть накладываются на край картинки */
 }
 </style>
 </head>
