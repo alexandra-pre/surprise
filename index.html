@@ -6,61 +6,9 @@
 <title>Сюрприз</title>
 
 <script type="module">
-import { Application, Controller } from "https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3.2.2/+esm";
 import confetti from "https://cdn.skypack.dev/canvas-confetti";
 
-const application = Application.start();
-
-class GiftBoxController extends Controller {
-  static targets = ["emoji", "claimBtn", "message"];
-
-  claim() {
-    const userPass = prompt("Введите пароль:");
-
-    if (userPass !== "2802") {
-      alert("Неверный пароль!");
-      return;
-    }
-
-    this.emojiTarget.classList.remove("joggle");
-    void this.emojiTarget.offsetWidth;
-    this.emojiTarget.classList.add("gift-box__emoji--claimed");
-    this.claimBtnTarget.hidden = true;
-
-    setTimeout(() => {
-      this.messageTarget.classList.remove("gift-box__message--hidden");
-      this.emojiTarget.hidden = true;
-
-      // 🔥 Конфетти
-      const confettiLayer = document.createElement("canvas");
-      confettiLayer.style.position = "fixed";
-      confettiLayer.style.top = 0;
-      confettiLayer.style.left = 0;
-      confettiLayer.style.width = "100vw";
-      confettiLayer.style.height = "100vh";
-      confettiLayer.style.pointerEvents = "none";
-      confettiLayer.style.zIndex = "10001";
-      document.body.appendChild(confettiLayer);
-
-      confetti.create(confettiLayer, { resize: true })({
-        particleCount: 200,
-        spread: 100,
-        origin: { y: 0.25 }
-      });
-
-      // Показ слайдов
-      const slidesContainer = document.getElementById("slides");
-      slidesContainer.style.display = "flex";
-      current = 0;
-      showImage(current);
-      setupAutoSlide();
-    }, 500);
-  }
-}
-
-application.register("gift-box", GiftBoxController);
-
-// ---------- Слайды ----------
+// ---------- Логика Слайдов ----------
 const images = [
   "https://i.ibb.co/4ZCLJXQ3/IMG-5523.jpg",
   "https://i.ibb.co/bjJzsQdL/IMG-5525.jpg"
@@ -68,9 +16,9 @@ const images = [
 
 let current = 0;
 let autoSlideTimeout = null;
-const slidesContainer = document.getElementById("slides");
 
 function renderImagesIfNeeded() {
+  const slidesContainer = document.getElementById("slides");
   if (slidesContainer.querySelectorAll(".img").length === 0) {
     images.forEach(src => {
       const img = document.createElement("img");
@@ -83,6 +31,7 @@ function renderImagesIfNeeded() {
 
 function showImage(idx) {
   renderImagesIfNeeded();
+  const slidesContainer = document.getElementById("slides");
   const imgList = slidesContainer.querySelectorAll(".img");
   imgList.forEach((img, i) => {
     if (i === idx) img.classList.add("active");
@@ -115,10 +64,90 @@ function clearAutoSlide() {
   if (autoSlideTimeout) clearTimeout(autoSlideTimeout);
 }
 
+// ---------- Логика Открытия (Чистый JavaScript) ----------
+
+const CORRECT_PASS = "2802";
+
+function claim() {
+    // 1. Скрываем кнопку "НЕ ОТКРЫВАЙ" и начинаем анимацию
+    const emoji = document.getElementById('giftEmoji');
+    const claimBtn = document.getElementById('claimBtn');
+    const message = document.getElementById('giftMessage');
+    const mainContent = document.getElementById('mainContent');
+
+    emoji.classList.remove("joggle");
+    void emoji.offsetWidth;
+    emoji.classList.add("gift-box__emoji--claimed");
+    claimBtn.hidden = true;
+    
+    // 2. Запускаем конфетти и показываем слайды
+    setTimeout(() => {
+        message.classList.remove("gift-box__message--hidden");
+        emoji.hidden = true;
+        
+        // 🔥 Конфетти
+        const confettiLayer = document.createElement("canvas");
+        confettiLayer.style.position = "fixed";
+        confettiLayer.style.top = 0;
+        confettiLayer.style.left = 0;
+        confettiLayer.style.width = "100vw";
+        confettiLayer.style.height = "100vh";
+        confettiLayer.style.pointerEvents = "none";
+        confettiLayer.style.zIndex = "10001";
+        document.body.appendChild(confettiLayer);
+
+        confetti.create(confettiLayer, { resize: true })({
+            particleCount: 200,
+            spread: 100,
+            origin: { y: 0.25 }
+        });
+
+        // Показ слайдов
+        const slidesContainer = document.getElementById("slides");
+        slidesContainer.style.display = "flex";
+        mainContent.hidden = true; // Скрываем коробку после запуска слайдов
+
+        current = 0;
+        showImage(current);
+        setupAutoSlide();
+        
+    }, 500);
+}
+
+function checkPassword() {
+    const passwordInput = document.getElementById('passwordInput');
+    const userPass = passwordInput.value;
+
+    if (userPass.length !== 4) {
+        alert("Пароль должен содержать ровно 4 цифры.");
+        return;
+    }
+
+    if (userPass !== CORRECT_PASS) {
+        alert("Неверный пароль!");
+        passwordInput.value = '';
+        return;
+    }
+
+    // ИСПРАВЛЕНИЕ: Пароль верный: Скрываем модал и показываем основной контент (коробку)
+    document.getElementById('passwordModal').style.display = 'none';
+    document.getElementById('mainContent').hidden = false;
+}
+
+function handleKeydown(event) {
+    if (event.key === 'Enter') {
+        checkPassword();
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("prevBtn").addEventListener("click", showPrev);
-  document.getElementById("nextBtn").addEventListener("click", showNext);
+    document.getElementById("prevBtn").addEventListener("click", showPrev);
+    document.getElementById("nextBtn").addEventListener("click", showNext);
+    document.getElementById("claimBtn").addEventListener("click", claim);
+    document.getElementById("modalOpenBtn").addEventListener("click", checkPassword);
+    document.getElementById("passwordInput").addEventListener("keydown", handleKeydown);
 });
+
 </script>
 
 <style>
@@ -129,7 +158,7 @@ body {
   overflow: hidden;
 }
 
-/* ---------- Коробка (без изменений) ---------- */
+/* ---------- Коробка (Контейнер) ---------- */
 .mt-40 { margin-top: 5rem; text-align: center; }
 .joggle { animation: joggle 4.5s ease-in-out infinite; }
 .gift-box__emoji { font-size: 13em; }
@@ -148,7 +177,60 @@ body {
 .gift-box__message--hidden { opacity: 0; transform: scale(0.95); }
 @keyframes joggle { 0%,33%,100%{transform:rotate(0deg);} 3.33%{transform:rotate(-10deg);} 6.67%{transform:rotate(12deg);} 10%{transform:rotate(-10deg);} 13.33%{transform:rotate(9deg);} 16.67%{transform:rotate(0deg);} }
 
-/* ---------- Слайды — на весь экран (без изменений) ---------- */
+/* ------------------------------------------------------------------ */
+/* СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА ПАРОЛЯ */
+#passwordModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.password-box {
+    background: white;
+    padding: 30px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    font-size: 1.2em;
+}
+
+.password-box p {
+    margin-top: 0;
+    font-size: 1.5em;
+    color: #333;
+}
+
+#passwordInput {
+    font-size: 2em;
+    width: 120px; /* Фиксированная ширина для 4-х цифр */
+    text-align: center;
+    padding: 10px 5px;
+    margin-bottom: 20px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    letter-spacing: 5px; /* Для визуального разделения цифр */
+}
+
+.password-box button {
+    font-size: 1.2em;
+    background: red;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+/* ------------------------------------------------------------------ */
+
+
+/* ---------- Слайды — на весь экран ---------- */
 #slides {
   display: none;
   position: fixed;
@@ -162,7 +244,7 @@ body {
   z-index: 9999;
 }
 
-/* ИЗМЕНЕН: КОНТЕЙНЕР-ОБЕРТКА ДЛЯ КАРТИНКИ И КНОПОК */
+/* КОНТЕЙНЕР-ОБЕРТКА ДЛЯ КАРТИНКИ И КНОПОК */
 .slide-wrapper {
   position: relative; 
   width: 90%;
@@ -193,7 +275,7 @@ body {
   background: red;
   color: white;
   border: none;
-  /* ОЧЕНЬ МАЛЕНЬКИЙ РАЗМЕР КНОПКИ */
+  /* МАЛЕНЬКИЙ РАЗМЕР КНОПКИ */
   font-size: 24px; 
   border-radius: 14px;
   /* УМЕНЬШЕННЫЙ PADDING */
@@ -210,13 +292,13 @@ body {
 
 /* ---------- Мобильные кнопки ---------- */
 @media (max-width: 600px) {
-    /* ИЗМЕНЕН: УМЕНЬШЕНА МОБИЛЬНАЯ РАМКА */
+    /* УМЕНЬШЕНА МОБИЛЬНАЯ РАМКА */
     .slide-wrapper {
       padding: 0 5%; 
     }
     
   .navbtn {
-    /* ОЧЕНЬ МАЛЕНЬКИЙ РАЗМЕР КНОПКИ */
+    /* МАЛЕНЬКИЙ РАЗМЕР КНОПКИ */
     font-size: 20px;
     padding: 0 8px;
     opacity: 0.5;
@@ -228,22 +310,50 @@ body {
   
   .gift-box__emoji { font-size: 9em; }
   .gift-box__btn { font-size: 1.5em; }
+  
+  /* АДАПТАЦИЯ МОДАЛЬНОГО ОКНА ДЛЯ МОБИЛЬНЫХ */
+  .password-box {
+      padding: 20px;
+  }
+  .password-box p {
+      font-size: 1.2em;
+  }
+  #passwordInput {
+      font-size: 1.5em;
+      width: 100px;
+  }
 }
 </style>
+</head>
 
 <body>
-<div class="mt-40">
-  <div class="gift-box" data-controller="gift-box">
-    <div class="gift-box__emoji joggle" data-gift-box-target="emoji">🎁</div>
-    <button class="gift-box__btn" data-action="gift-box#claim" data-gift-box-target="claimBtn">
+<div id="mainContent" class="mt-40" hidden>
+  <div class="gift-box">
+    <div id="giftEmoji" class="gift-box__emoji joggle">🎁</div>
+    <button id="claimBtn" class="gift-box__btn">
       НЕ ОТКРЫВАЙ КОРОБКУ!
     </button>
-    <div class="gift-box__message gift-box__message--hidden" data-gift-box-target="message"></div>
   </div>
+  
+  <div id="giftMessage" class="gift-box__message gift-box__message--hidden"></div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО ДЛЯ ПАРОЛЯ (Изначально видимо) -->
+<div id="passwordModal">
+    <div class="password-box">
+        <p>Дата и месяц моего рождения (4 цифры)</p>
+        <input 
+            type="password" 
+            id="passwordInput" 
+            maxlength="4" 
+            placeholder="••••"
+        >
+        <button id="modalOpenBtn">Открыть</button>
+    </div>
 </div>
 
 <!-- ---------- Слайды ---------- -->
-<div id="slides">
+<div id="slides" style="display: none;">
   <div class="slide-wrapper">
     <button class="navbtn" id="prevBtn">⟨</button>
     <button class="navbtn" id="nextBtn">⟩</button>
